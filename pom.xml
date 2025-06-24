@@ -28,6 +28,22 @@
       <version>7.19.0</version>
     </dependency>
 
+    <!-- Camunda WebApp (Cockpit, Tasklist, Admin) -->
+<dependency>
+  <groupId>org.camunda.bpm.springboot</groupId>
+  <artifactId>camunda-bpm-spring-boot-starter-webapp</artifactId>
+  <version>7.19.0</version>
+</dependency>
+
+
+
+      <!-- Camunda REST API -->
+  <dependency>
+    <groupId>org.camunda.bpm.springboot</groupId>
+    <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
+    <version>7.19.0</version>
+  </dependency>
+
     <!-- Spring Web -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

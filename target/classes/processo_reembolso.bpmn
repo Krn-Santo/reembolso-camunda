@@ -12,11 +12,11 @@
       <bpmn:outgoing>Flow_02vaq28</bpmn:outgoing>
     </bpmn:task>
     <bpmn:sequenceFlow id="Flow_0fjl27a" sourceRef="Event_1e8137n" targetRef="Activity_0j2ckvp" />
-    <bpmn:task id="Activity_0g9zyhl" name="PEDENTE GERENTE">
+    <bpmn:userTask id="Activity_0g9zyhl" name="PENDENTE GERENTE">
       <bpmn:incoming>Flow_0ru805m</bpmn:incoming>
       <bpmn:incoming>Flow_1khyv0l</bpmn:incoming>
       <bpmn:outgoing>Flow_1pdba3b</bpmn:outgoing>
-    </bpmn:task>
+    </bpmn:userTask>
     <bpmn:userTask id="Activity_135b18s" name="FORMULÁRIO REEMBOLSO">
       <bpmn:incoming>Flow_02vaq28</bpmn:incoming>
       <bpmn:outgoing>Flow_0ru805m</bpmn:outgoing>
@@ -30,7 +30,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1pdba3b" sourceRef="Activity_0g9zyhl" targetRef="Gateway_1hcd5l9" />
     <bpmn:sequenceFlow id="Flow_0fo77uq" name="SIM" sourceRef="Gateway_1hcd5l9" targetRef="Activity_1xn0n4e">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${aprovado}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${aprovado != null &amp;&amp; aprovado == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1wvne8l" sourceRef="Activity_1xn0n4e" targetRef="Activity_09agpz1" />
     <bpmn:serviceTask id="Activity_1xn0n4e" name="ACIONA API" camunda:class="com.exemplo.reembolso.delegate.AcionaPagamentoDelegate">
@@ -108,10 +108,6 @@
         <di:waypoint x="500" y="120" />
         <di:waypoint x="560" y="120" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1khyv0l_di" bpmnElement="Flow_1khyv0l">
-        <di:waypoint x="610" y="220" />
-        <di:waypoint x="610" y="160" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1pdba3b_di" bpmnElement="Flow_1pdba3b">
         <di:waypoint x="660" y="120" />
         <di:waypoint x="725" y="120" />
@@ -123,6 +119,18 @@
           <dc:Bounds x="798" y="102" width="20" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wvne8l_di" bpmnElement="Flow_1wvne8l">
+        <di:waypoint x="940" y="120" />
+        <di:waypoint x="1000" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1khyv0l_di" bpmnElement="Flow_1khyv0l">
+        <di:waypoint x="610" y="220" />
+        <di:waypoint x="610" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fh0105_di" bpmnElement="Flow_1fh0105">
+        <di:waypoint x="1100" y="120" />
+        <di:waypoint x="1172" y="120" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_174gy1z_di" bpmnElement="Flow_174gy1z">
         <di:waypoint x="750" y="145" />
         <di:waypoint x="750" y="183" />
@@ -131,14 +139,6 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="693" y="188" width="25" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1wvne8l_di" bpmnElement="Flow_1wvne8l">
-        <di:waypoint x="940" y="120" />
-        <di:waypoint x="1000" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1fh0105_di" bpmnElement="Flow_1fh0105">
-        <di:waypoint x="1100" y="120" />
-        <di:waypoint x="1172" y="120" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
