@@ -89,8 +89,10 @@ public class ReembolsoController {
         try {
             VariableMap vars = Variables.createVariables();
             body.forEach(vars::put);
-
+            System.out.println("Tentando completar tarefa: " + taskId);
+            System.out.println("Variáveis recebidas: " + body.toString());
             taskService.complete(taskId, vars);
+            System.out.println("Tarefa " + taskId + " completada com sucesso.");
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             System.err.println("Erro ao completar formulário: " + e.getMessage());
