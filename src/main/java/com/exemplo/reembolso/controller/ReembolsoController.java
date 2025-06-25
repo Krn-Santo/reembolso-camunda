@@ -10,10 +10,7 @@ import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -36,14 +32,44 @@ public class ReembolsoController {
     private TaskService taskService;
 
     // ✅ Iniciar novo processo de reembolso
-    @PostMapping
-    public ResponseEntity<Map<String, String>> criarReembolso(@RequestBody Map<String, Object> payload) {
-        ProcessInstance instance = runtimeService.startProcessInstanceByKey("processo_reembolso", payload);
+   @PostMapping
+public ResponseEntity<Map<String, String>> criarReembolso(@RequestBody Map<String, Object> payload) {
+    try {
+        VariableMap variables = Variables.createVariables();
+        payload.forEach(variables::put);
+
+        ProcessInstance instance = runtimeService.startProcessInstanceByKey("processo_reembolso", variables);
+
         Map<String, String> response = new HashMap<>();
         response.put("processInstanceId", instance.getProcessInstanceId());
+
         return ResponseEntity.ok(response);
-    
+    } catch (Exception e) {
+        System.err.println("Erro ao iniciar processo: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("erro", e.getMessage()));
     }
+}
+// 🔧 NOVO ENDPOINT PARA BUSCAR processInstanceId a partir do taskId
+@GetMapping("/processo-id/{taskId}")
+public ResponseEntity<?> buscarProcessInstanceId(@PathVariable String taskId) {
+    try {
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+
+        if (task != null) {
+            Map<String, String> response = new HashMap<>();
+            response.put("processInstanceId", task.getProcessInstanceId());
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tarefa não encontrada.");
+        }
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro ao buscar processInstanceId: " + e.getMessage());
+    }
+}
+
+
 
     // ✅ Verificar status do processo (Em andamento / Finalizado)
     @GetMapping("/status/{id}")
@@ -101,47 +127,41 @@ public class ReembolsoController {
     }
 
     // ✅ Completar tarefa de APROVAÇÃO DO GERENTE (com variável 'aprovado')
-    @PostMapping("/aprovar/{taskId}")
-    public ResponseEntity<Void> aprovarOuRejeitarTarefa(@PathVariable String taskId, @RequestBody Map<String, Object> body) {
-        try {
-            boolean aprovado = Boolean.parseBoolean(body.get("aprovado").toString());
+   @PostMapping("/aprovar/{taskId}")
+public ResponseEntity<Void> aprovarOuRejeitarTarefa(@PathVariable String taskId, @RequestBody Map<String, Object> body) {
+    try {
+        boolean aprovado = Boolean.parseBoolean(body.get("aprovado").toString());
 
-            Map<String, Object> aprovadoVar = new HashMap<>();
-            aprovadoVar.put("value", aprovado);
-            aprovadoVar.put("type", "Boolean");
+        Map<String, Object> variaveis = new HashMap<>();
+        variaveis.put("aprovado", aprovado); // ✅ adiciona diretamente a variável de processo
 
-            Map<String, Object> variables = new HashMap<>();
-            variables.put("aprovado", aprovadoVar);
+        System.out.println("Aprovando ou rejeitando a tarefa: " + taskId);
+        System.out.println("Valor da decisão: " + aprovado);
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("variables", variables);
+        taskService.complete(taskId, variaveis); // ✅ chamada direta
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-
-            RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:8080/engine-rest/task/" + taskId + "/complete";
-
-            restTemplate.postForEntity(url, request, Void.class);
-
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            System.err.println("Erro ao completar tarefa de aprovação: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+        System.err.println("Erro ao completar tarefa de aprovação: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+}
+
+
+
 
     // ✅ Buscar variáveis da tarefa do gerente (para exibir na tela)
-    @GetMapping("/tarefas/detalhes/{taskId}")
-    public ResponseEntity<?> buscarVariaveisTarefa(@PathVariable String taskId) {
-        try {
-            Map<String, Object> variaveis = taskService.getVariables(taskId);
-            return ResponseEntity.ok(variaveis);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro ao buscar variáveis da tarefa: " + e.getMessage());
-        }
+   @GetMapping("/tarefas/detalhes/{taskId}")
+public ResponseEntity<?> buscarVariaveisTarefa(@PathVariable String taskId) {
+    try {
+        System.out.println("Recebido taskId: " + taskId);
+        Map<String, Object> variaveis = taskService.getVariables(taskId);
+        return ResponseEntity.ok(variaveis);
+    } catch (Exception e) {
+        System.err.println("Erro ao buscar variáveis da tarefa: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro ao buscar variáveis da tarefa: " + e.getMessage());
     }
+}
+
 }
